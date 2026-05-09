@@ -145,7 +145,7 @@
     <div class="header">
         <h1>MC Crafting Guide</h1>
         <input type="text" id="search" class="search-box" placeholder="Search items...">
-        <p id="status" class="hint">Loading Database...</p>
+        <p id="status" class="hint"></p>
     </div>
     
     <div class="container">
@@ -258,7 +258,6 @@
         { name: "Painting", desc: "A decorative canvas used to display various pieces of art on your walls.", link: "https://minecraft-max.net/upload/webp/upload/iblock/32f/32fca8d0a5c4ba7747d30ce48d3d94eb.webp" },
         { name: "Paper", desc: "Crafted from sugar cane; used for books, maps, and firework rockets.", link: "https://minecraft-max.net/upload/webp/upload/iblock/2a0/2a0b6d9f2e53ba06ef91680c5c669379.webp" },
         { name: "Golden Pickaxe", desc: "Mines very fast but has extremely low durability.", link: "https://minecraft-max.net/upload/webp/upload/iblock/989/98921b2e0c39166a5e2bce596f46a845.webp" },
-        { name: "Iron Pickaxe", desc: "A reliable mid-tier tool capable of mining gold, redstone, and diamonds.", link: "https://minecraft-max.net/upload/webp/upload/iblock/5fa/5fad008a1940ea93b3723e1ba6404f02.webp" },
         { name: "Stone Pickaxe", desc: "Standard early-game mining tool made from cobblestone.", link: "https://minecraft-max.net/upload/webp/upload/iblock/883/883467e75311586200d11c10f8c17006.webp" },
         { name: "Wooden Pickaxe", desc: "The very first mining tool a player crafts to begin their journey.", link: "https://minecraft-max.net/upload/webp/upload/iblock/9e5/9e5d472cffa1bcebde246ed4f27ac1ce.webp" },
         { name: "Piston", desc: "A redstone device that pushes blocks and entities when powered.", link: "https://minecraft-max.net/upload/webp/upload/iblock/ce5/ce57997891b193fd28b2fa3f862bc92b.webp" },
@@ -355,8 +354,7 @@
         { name: "Trapdoor", desc: "A horizontal door used for hatches, ladders, or decoration.", link: "https://minecraft-max.net/upload/webp/upload/iblock/8cb/8cb706d03f0b91b69565b0da3431b903.webp" },
         { name: "Trapped Chest", desc: "A chest that emits a redstone signal when opened.", link: "https://minecraft-max.net/upload/webp/upload/iblock/db5/db5e12f4923c90bafec5a17fa21ce042.webp" },
         { name: "Tripwire Hook", desc: "Used with string to detect entity movement and power redstone.", link: "https://minecraft-max.net/upload/webp/upload/iblock/3f8/3f8a0a475988b0a7d66f983a355c28af.webp" },
-        { name: "Turtle Shell", desc: "Provides water breathing and defense when worn as a helmet.", link: "https://minecraft-max.net/upload/webp/upload/iblock/fbc/fbc10a5e9b4615c262dfdf87856cff53.webp" }
-        // ... (Previous items)
+        { name: "Turtle Shell", desc: "Provides water breathing and defense when worn as a helmet.", link: "https://minecraft-max.net/upload/webp/upload/iblock/fbc/fbc10a5e9b4615c262dfdf87856cff53.webp" },
         { name: "Warped Button", desc: "A wooden button made from warped planks that does not burn in lava.", link: "https://minecraft-max.net/upload/webp/upload/iblock/a85/a8507b2bd52d98b9f92e47f032ab57b8.webp" },
         { name: "Warped Door", desc: "A beautiful teal door crafted from wood found in the Nether's Warped Forests.", link: "https://minecraft-max.net/upload/webp/upload/iblock/856/856ef364b6e400691a0ce66c58f921c0.webp" },
         { name: "Warped Fence", desc: "Fireproof fencing used for decoration or containing mobs in the Nether.", link: "https://minecraft-max.net/upload/webp/upload/iblock/3dd/3dd908e99ea9c0475557c1eff9f3193b.webp" },
@@ -382,28 +380,9 @@
         
         let filtered;
         if (query === "") {
-            filtered = RECIPES.slice(0, 15); 
-            status.innerText = "Featured Collection";
-        } else {
-            filtered = RECIPES.filter(r => r.name.toLowerCase().includes(query.toLowerCase()));
-            status.innerText = `${filtered.length} items found`;
-        }
-
-        filtered.forEach((recipe, index) => {
-            const car },
-        { name: "Waxed Cut Copper Stairs", desc: "Waxed copper stairs that will never oxidize further than their current stage.", link: "https://minecraft-max.net/upload/webp/upload/iblock/da6/da63d590df92fde24cb5c36a8b235054.webp" }
-    ];
-    ];
-
-    function render(query = "") {
-        const out = document.getElementById('gallery');
-        const status = document.getElementById('status');
-        out.innerHTML = "";
-        
-        let filtered;
-        if (query === "") {
-            filtered = RECIPES.slice(0, 15); 
-            status.innerText = "Featured Collection";
+            // "Unoptimized": Show all items instead of just 15
+            filtered = RECIPES; 
+            status.innerText = "All Items Displayed";
         } else {
             filtered = RECIPES.filter(r => r.name.toLowerCase().includes(query.toLowerCase()));
             status.innerText = `${filtered.length} items found`;
@@ -412,7 +391,7 @@
         filtered.forEach((recipe, index) => {
             const card = document.createElement('div');
             card.className = 'recipe-card';
-            card.style.animationDelay = `${index * 0.05}s`;
+            card.style.animationDelay = `${index * 0.01}s`; // Slightly faster stagger for large list
             
             card.innerHTML = `
                 <img src="${recipe.link}" class="recipe-img" alt="${recipe.name}">
@@ -424,6 +403,8 @@
     }
 
     document.getElementById('search').oninput = (e) => render(e.target.value);
+    
+    // Start rendering immediately
     render();
 </script>
 </body>
