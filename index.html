@@ -64,6 +64,26 @@
             box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
         }
 
+        /* Loading Animation Styles */
+        .loader {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(16, 185, 129, 0.2);
+            border-top: 3px solid var(--accent);
+            border-radius: 50%;
+            display: inline-block;
+            animation: spin 1s linear infinite;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden { display: none; }
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
@@ -137,6 +157,9 @@
             font-size: 0.95rem; 
             margin-top: 10px; 
             font-weight: 300;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
     </style>
 </head>
@@ -145,7 +168,10 @@
     <div class="header">
         <h1>MC Crafting Guide</h1>
         <input type="text" id="search" class="search-box" placeholder="Search items...">
-        <p id="status" class="hint"></p>
+        <div id="status-container" class="hint">
+            <div id="loader" class="loader"></div>
+            <span id="status">Loading Database...</span>
+        </div>
     </div>
     
     <div class="container">
@@ -376,35 +402,43 @@
     function render(query = "") {
         const out = document.getElementById('gallery');
         const status = document.getElementById('status');
+        const loader = document.getElementById('loader');
+        
         out.innerHTML = "";
         
-        let filtered;
-        if (query === "") {
-            // "Unoptimized": Show all items instead of just 15
-            filtered = RECIPES; 
-            status.innerText = "All Items Displayed";
-        } else {
-            filtered = RECIPES.filter(r => r.name.toLowerCase().includes(query.toLowerCase()));
-            status.innerText = `${filtered.length} items found`;
-        }
+        // Always show the loader briefly while processing
+        loader.classList.remove('hidden');
+
+        // Filter results: No limit, show all matching items
+        const filtered = query === "" 
+            ? RECIPES 
+            : RECIPES.filter(r => r.name.toLowerCase().includes(query.toLowerCase()));
 
         filtered.forEach((recipe, index) => {
             const card = document.createElement('div');
             card.className = 'recipe-card';
-            card.style.animationDelay = `${index * 0.01}s`; // Slightly faster stagger for large list
+            // Stagger animation slightly for style, but set low so they feel immediate
+            card.style.animationDelay = `${index * 0.005}s`;
             
             card.innerHTML = `
-                <img src="${recipe.link}" class="recipe-img" alt="${recipe.name}">
+                <img src="${recipe.link}" class="recipe-img" alt="${recipe.name}" loading="lazy">
                 <h2>${recipe.name}</h2>
                 <p class="description">${recipe.desc}</p>
             `;
             out.appendChild(card);
         });
+
+        // Update the status text and hide the spinner
+        status.innerText = query === "" ? `Full Database (${RECIPES.length} items)` : `${filtered.length} items found`;
+        loader.classList.add('hidden');
     }
 
-    document.getElementById('search').oninput = (e) => render(e.target.value);
-    
-    // Start rendering immediately
+    // Attach search event
+    document.getElementById('search').addEventListener('input', (e) => {
+        render(e.target.value);
+    });
+
+    // Initial Full Render
     render();
 </script>
 </body>
