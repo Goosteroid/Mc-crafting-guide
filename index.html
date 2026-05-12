@@ -293,9 +293,10 @@
   .seed-code-wrap {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.5rem;
     margin-bottom: 0.8rem;
     flex-wrap: wrap;
+    overflow: hidden;
   }
 
   .seed-copy-btn {
@@ -324,7 +325,7 @@
 
   .seed-code {
     font-family: 'VT323', monospace;
-    font-size: 1.8rem;
+    font-size: clamp(0.85rem, 3.5vw, 1.5rem);
     color: var(--gold);
     background: rgba(245,197,24,0.08);
     border: 1px solid rgba(245,197,24,0.2);
@@ -603,8 +604,8 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.85);
-    backdrop-filter: blur(8px);
+    background: rgba(0,0,0,0.9);
+    backdrop-filter: blur(10px);
     z-index: 9999;
     align-items: center;
     justify-content: center;
@@ -612,17 +613,17 @@
   .yt-modal-overlay.open { display: flex; }
 
   .yt-modal {
-    background: #0f172a;
-    border: 2px solid rgba(255,51,51,0.4);
-    border-radius: 4px;
-    padding: 1rem;
-    width: 90%;
-    max-width: 860px;
+    background: #0a0f1a;
+    border: 2px solid rgba(255,51,51,0.5);
+    border-radius: 6px;
+    padding: 1.2rem;
+    width: 92%;
+    max-width: 820px;
     position: relative;
-    animation: ytPop 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    animation: ytPop 0.28s cubic-bezier(0.34,1.56,0.64,1);
   }
   @keyframes ytPop {
-    from { transform: scale(0.85); opacity: 0; }
+    from { transform: scale(0.82); opacity: 0; }
     to   { transform: scale(1);    opacity: 1; }
   }
 
@@ -630,48 +631,94 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 0.8rem;
+    margin-bottom: 0.9rem;
+    gap: 0.5rem;
   }
   .yt-modal-title {
     font-family: 'Press Start 2P', monospace;
-    font-size: 0.55rem;
-    color: var(--redstone);
+    font-size: 0.5rem;
+    color: #ff4444;
     letter-spacing: 2px;
+    line-height: 1.6;
   }
   .yt-modal-close {
     font-family: 'Press Start 2P', monospace;
-    font-size: 0.5rem;
+    font-size: 0.45rem;
     background: rgba(255,51,51,0.15);
-    border: 1px solid rgba(255,51,51,0.4);
-    color: var(--redstone);
-    padding: 0.4rem 0.7rem;
+    border: 1px solid rgba(255,51,51,0.5);
+    color: #ff4444;
+    padding: 0.45rem 0.75rem;
     cursor: pointer;
     transition: all 0.15s;
+    flex-shrink: 0;
   }
-  .yt-modal-close:hover { background: var(--redstone); color:#fff; }
+  .yt-modal-close:hover { background: #ff4444; color:#fff; }
 
-  .yt-iframe-wrap {
+  /* Player — iframe when hosted, thumbnail fallback locally */
+  .yt-player-wrap {
     position: relative;
-    padding-bottom: 56.25%; /* 16:9 */
-    height: 0;
+    width: 100%;
+    padding-bottom: 56.25%;
+    background: #000;
+    border: 1px solid rgba(255,255,255,0.06);
     overflow: hidden;
-    border: 1px solid rgba(255,255,255,0.08);
   }
-  .yt-iframe-wrap iframe {
+  .yt-player-wrap iframe {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     border: none;
   }
-
-  .yt-no-video {
-    padding: 3rem 1rem;
-    text-align: center;
+  /* Thumbnail fallback layer (shown until iframe loads or on local) */
+  .yt-thumb-layer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+  }
+  .yt-thumb {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: filter 0.3s;
+  }
+  .yt-thumb-layer:hover .yt-thumb { filter: brightness(0.65); }
+  .yt-play-btn {
+    position: relative;
+    z-index: 2;
+    width: 72px; height: 72px;
+    background: rgba(255,0,0,0.92);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem;
+    box-shadow: 0 4px 30px rgba(255,0,0,0.5);
+    transition: transform 0.2s, background 0.2s;
+    pointer-events: none;
+  }
+  .yt-thumb-layer:hover .yt-play-btn {
+    transform: scale(1.12);
+    background: #ff0000;
+  }
+  .yt-open-label {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    z-index: 3;
+    background: linear-gradient(transparent, rgba(0,0,0,0.85));
+    color: #fff;
     font-family: 'Press Start 2P', monospace;
-    font-size: 0.5rem;
-    color: #4a6a4a;
-    line-height: 2;
+    font-size: 0.38rem;
+    text-align: center;
+    padding: 1.5rem 1rem 0.6rem;
+    letter-spacing: 2px;
+    pointer-events: none;
   }
 
   /* Watch button on farm cards */
@@ -1125,99 +1172,63 @@ function showSeeds(edition, btn) {
       <div class="card-icon">🌾</div>
       <div class="farm-title">AFK IRON GOLEM FARM</div>
       <p style="color:#b0c8b0;font-size:0.9rem;line-height:1.7">Build in a village with 20+ beds and 20+ villagers. Golems spawn automatically, fall into a lava blade and drop Iron Ingots. Produces 300–800 ingots/hour while AFK.</p>
-      <span class="tag red">Redstone</span><span class="tag diamond">800/hr</span>
-      <br>
-      <button class="watch-btn" onclick="openYT('', 'AFK IRON GOLEM FARM')">
-        <span class="play-icon">▶</span> WATCH TUTORIAL
-      </button>
+      <span class="tag red">Redstone</span>
+      <span class="tag diamond">800/hr</span><br>
+      <button class="watch-btn" onclick="window.open('https://www.youtube.com/watch?v=hzlR-rRCTrM','_blank')"><span class="play-icon">▶</span> WATCH TUTORIAL</button>
     </div>
 
     <div class="farm-card">
       <div class="card-icon">⭐</div>
       <div class="farm-title">XP BLAZE FARM</div>
       <p style="color:#b0c8b0;font-size:0.9rem;line-height:1.7">Build a platform around a Nether Fortress blaze spawner. Funnel blazes into a kill chamber you can one-shot. Fastest XP in the game — max-enchant a tool in 5 minutes.</p>
-      <span class="tag gold">Fast XP</span><span class="tag">Nether</span>
-      <br>
-      <button class="watch-btn" onclick="openYT('', 'XP BLAZE FARM')">
-        <span class="play-icon">▶</span> WATCH TUTORIAL
-      </button>
+      <span class="tag gold">Fast XP</span>
+      <span class="tag">Nether</span><br>
+      <button class="watch-btn" onclick="window.open('https://www.youtube.com/watch?v=SBl9OAaIbws','_blank')"><span class="play-icon">▶</span> WATCH TUTORIAL</button>
     </div>
 
     <div class="farm-card">
       <div class="card-icon">🐠</div>
       <div class="farm-title">GUARDIAN FARM</div>
       <p style="color:#b0c8b0;font-size:0.9rem;line-height:1.7">Drain an ocean monument and convert it into a guardian farm. Produces Prismarine, Sea Lanterns and massive XP. Takes time to build but produces ~180k items per hour.</p>
-      <span class="tag diamond">Prismarine</span><span class="tag red">Complex</span>
-      <br>
-      <button class="watch-btn" onclick="openYT('', 'GUARDIAN FARM')">
-        <span class="play-icon">▶</span> WATCH TUTORIAL
-      </button>
+      <span class="tag diamond">Prismarine</span>
+      <span class="tag red">Complex</span><br>
+      <button class="watch-btn" onclick="window.open('https://www.youtube.com/watch?v=Gt8hQRMYNuQ','_blank')"><span class="play-icon">▶</span> WATCH TUTORIAL</button>
     </div>
 
     <div class="farm-card">
       <div class="card-icon">🥩</div>
       <div class="farm-title">COW/CHICKEN COOKER</div>
       <p style="color:#b0c8b0;font-size:0.9rem;line-height:1.7">Breed cows or chickens above a hopper-connected lava blade. Babies grow up, get cooked instantly and drop cooked meat into chests. Infinite food supply forever.</p>
-      <span class="tag">Cooked Meat</span><span class="tag gold">Passive</span>
-      <br>
-      <button class="watch-btn" onclick="openYT('', 'COW/CHICKEN COOKER')">
-        <span class="play-icon">▶</span> WATCH TUTORIAL
-      </button>
+      <span class="tag">Cooked Meat</span>
+      <span class="tag gold">Passive</span><br>
+      <button class="watch-btn" onclick="window.open('https://www.youtube.com/watch?v=KttsRts3m6c','_blank')"><span class="play-icon">▶</span> WATCH TUTORIAL</button>
     </div>
 
     <div class="farm-card">
       <div class="card-icon">🕸️</div>
       <div class="farm-title">SPIDER / STRING FARM</div>
       <p style="color:#b0c8b0;font-size:0.9rem;line-height:1.7">Build on top of a spider spawner in a cave. A water funnel pushes spiders to a kill zone. You get endless String (for bows, wool) and Spider Eyes (for potions).</p>
-      <span class="tag">String</span><span class="tag">Spider Eye</span>
-      <br>
-      <button class="watch-btn" onclick="openYT('', 'SPIDER / STRING FARM')">
-        <span class="play-icon">▶</span> WATCH TUTORIAL
-      </button>
+      <span class="tag">String</span>
+      <span class="tag">Spider Eye</span><br>
+      <button class="watch-btn" onclick="window.open('https://www.youtube.com/watch?v=rlKgbpCHCUA','_blank')"><span class="play-icon">▶</span> WATCH TUTORIAL</button>
     </div>
 
     <div class="farm-card">
       <div class="card-icon">💎</div>
       <div class="farm-title">VILLAGER TRADING HALL</div>
       <p style="color:#b0c8b0;font-size:0.9rem;line-height:1.7">Cure zombie villagers to get maximum discount. Set up rows of Librarians, Farmers, Weaponsmiths and Fletchers. Trade paper/carrots for emeralds; emeralds for enchanted gear. Unlimited diamonds.</p>
-      <span class="tag gold">Emeralds</span><span class="tag diamond">Best Farm</span>
-      <br>
-      <button class="watch-btn" onclick="openYT('', 'VILLAGER TRADING HALL')">
-        <span class="play-icon">▶</span> WATCH TUTORIAL
-      </button>
+      <span class="tag gold">Emeralds</span>
+      <span class="tag diamond">Best Farm</span><br>
+      <button class="watch-btn" onclick="window.open('https://www.youtube.com/watch?v=uxvApVVWE0Q','_blank')"><span class="play-icon">▶</span> WATCH TUTORIAL</button>
     </div>
 
     <div class="farm-card">
       <div class="card-icon">🎆</div>
       <div class="farm-title">ENDERMAN FARM</div>
       <p style="color:#b0c8b0;font-size:0.9rem;line-height:1.7">Build a large platform in the End at Y=128. Endermen fall from the height and you one-shot them. Insane Ender Pearl drops and XP — best late-game XP farm in the game.</p>
-      <span class="tag red">End Only</span><span class="tag diamond">Top XP</span>
-      <br>
-      <button class="watch-btn" onclick="openYT('', 'ENDERMAN FARM')">
-        <span class="play-icon">▶</span> WATCH TUTORIAL
-      </button>
-    </div>
-
-    <div class="farm-card">
-      <div class="card-icon">🌵</div>
-      <div class="farm-title">CACTUS + BAMBOO FARM</div>
-      <p style="color:#b0c8b0;font-size:0.9rem;line-height:1.7">A zero-tick cactus farm using pistons auto-harvests cactus into hoppers. Bamboo auto-breaks itself. Combine both for infinite fuel — cactus for green dye, bamboo for scaffolding and sticks.</p>
-      <span class="tag">Fuel</span><span class="tag gold">Zero-Tick</span>
-      <br>
-      <button class="watch-btn" onclick="openYT('', 'CACTUS + BAMBOO FARM')">
-        <span class="play-icon">▶</span> WATCH TUTORIAL
-      </button>
-    </div>
-
-    <div class="farm-card">
-      <div class="card-icon">🍄</div>
-      <div class="farm-title">MUSHROOM / BONE MEAL FARM</div>
-      <p style="color:#b0c8b0;font-size:0.9rem;line-height:1.7">Use a Composter with a skeleton farm to generate infinite Bone Meal. Feed it into a flower/crop farm for auto-growing food. Essential for early game food security on any difficulty.</p>
-      <span class="tag">Bone Meal</span><span class="tag">Crops</span>
-      <br>
-      <button class="watch-btn" onclick="openYT('', 'MUSHROOM / BONE MEAL FARM')">
-        <span class="play-icon">▶</span> WATCH TUTORIAL
-      </button>
+      <span class="tag red">End Only</span>
+      <span class="tag diamond">Top XP</span><br>
+      <button class="watch-btn" onclick="window.open('https://www.youtube.com/watch?v=NbaCq8_3NPM','_blank')"><span class="play-icon">▶</span> WATCH TUTORIAL</button>
     </div>
 
   </div>
@@ -1236,7 +1247,7 @@ function showSeeds(edition, btn) {
             --text-dim: #94a3b8;
         }
 
-        body { 
+        #crafting .header-inner { 
             background: radial-gradient(circle at top, #1e293b 0%, #0f172a 100%);
             color: var(--text-main); 
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
@@ -1258,7 +1269,7 @@ function showSeeds(edition, btn) {
             text-align: center;
         }
 
-        h1 { 
+        #crafting h1 { 
             margin: 0 0 15px 0; 
             color: var(--accent); 
             font-size: 2.2rem; 
@@ -1295,12 +1306,12 @@ function showSeeds(edition, btn) {
             border-top: 3px solid var(--accent);
             border-radius: 50%;
             display: inline-block;
-            animation: spin 1s linear infinite;
+            animation: craftSpin 1s linear infinite;
             vertical-align: middle;
             margin-right: 10px;
         }
 
-        @keyframes spin {
+        @keyframes craftSpin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
@@ -1330,10 +1341,10 @@ function showSeeds(edition, btn) {
             flex-direction: column;
             align-items: center;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            animation: fadeIn 0.5s ease backwards;
+            animation: craftFadeIn 0.5s ease backwards;
         }
 
-        @keyframes fadeIn {
+        @keyframes craftFadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
@@ -1872,46 +1883,64 @@ document.addEventListener('click', function (e) {
       <div class="yt-modal-title" id="ytModalTitle">FARM TUTORIAL</div>
       <button class="yt-modal-close" onclick="closeYTBtn()">✕ CLOSE</button>
     </div>
-    <div class="yt-iframe-wrap" id="ytFrameWrap"></div>
+    <div class="yt-player-wrap" id="ytPlayerWrap">
+      <!-- iframe is injected here when opened -->
+      <div id="ytIframeSlot"></div>
+      <!-- Thumbnail fallback — shown on local file:// and as loading bg -->
+      <div class="yt-thumb-layer" id="ytThumbLayer" onclick="openInYT()" style="display:none">
+        <img class="yt-thumb" id="ytThumb" src="" alt="Video thumbnail">
+        <div class="yt-play-btn">▶</div>
+        <div class="yt-open-label">⚠ LOCAL FILE — TAP TO OPEN IN YOUTUBE</div>
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
+// ── YouTube Modal Logic ────────────────────────────────────────────────────
+let _currentVideoId = '';
+
 function openYT(videoId, title) {
-  const overlay = document.getElementById('ytModalOverlay');
-  const wrap    = document.getElementById('ytFrameWrap');
-  const ttl     = document.getElementById('ytModalTitle');
+  if (!videoId || videoId.trim() === '') return;
+  _currentVideoId = videoId.trim();
 
-  ttl.textContent = '▶ ' + title;
-  wrap.innerHTML = '';
+  document.getElementById('ytModalTitle').textContent = '▶ ' + title;
 
-  if (videoId && videoId.trim() !== '') {
-    // Extract video ID from full URL if needed
-    let vid = videoId.trim();
-    const urlMatch = vid.match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/);
-    if (urlMatch) vid = urlMatch[1];
+  const iframeSlot = document.getElementById('ytIframeSlot');
+  const thumbLayer = document.getElementById('ytThumbLayer');
+  const thumb      = document.getElementById('ytThumb');
 
-    wrap.innerHTML = `<iframe
-      src="https://www.youtube.com/embed/${vid}?autoplay=1&rel=0"
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-      allowfullscreen>
-    </iframe>`;
+  thumb.src = 'https://img.youtube.com/vi/' + _currentVideoId + '/hqdefault.jpg';
+
+  const isLocal = window.location.protocol === 'file:';
+
+  if (isLocal) {
+    iframeSlot.innerHTML = '';
+    thumbLayer.style.display = 'flex';
   } else {
-    wrap.innerHTML = `<div class="yt-no-video">
-      📺 NO TUTORIAL LINKED YET<br><br>
-      PROVIDE A YOUTUBE LINK<br>TO ENABLE THIS VIDEO
-    </div>`;
+    thumbLayer.style.display = 'none';
+    iframeSlot.innerHTML =
+      '<iframe src="https://www.youtube-nocookie.com/embed/' + _currentVideoId +
+      '?autoplay=1&rel=0&modestbranding=1" ' +
+      'allow="accelerometer; autoplay; clipboard-write; encrypted-media; ' +
+      'gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>';
   }
 
-  overlay.classList.add('open');
+  document.getElementById('ytModalOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
 
+function openInYT() {
+  if (_currentVideoId) {
+    window.open('https://www.youtube.com/watch?v=' + _currentVideoId, '_blank');
+  }
+}
+
 function closeYTBtn() {
-  const overlay = document.getElementById('ytModalOverlay');
-  const wrap    = document.getElementById('ytFrameWrap');
-  overlay.classList.remove('open');
-  wrap.innerHTML = ''; // stops video
+  document.getElementById('ytModalOverlay').classList.remove('open');
+  document.getElementById('ytIframeSlot').innerHTML = '';
+  document.getElementById('ytThumb').src = '';
+  document.getElementById('ytThumbLayer').style.display = 'none';
   document.body.style.overflow = '';
 }
 
@@ -1919,7 +1948,6 @@ function closeYT(e) {
   if (e.target === document.getElementById('ytModalOverlay')) closeYTBtn();
 }
 
-// Close on Escape key
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeYTBtn(); });
 </script>
 
