@@ -654,7 +654,7 @@
   }
   .yt-modal-close:hover { background: #ff4444; color:#fff; }
 
-  /* Player — iframe when hosted, thumbnail fallback locally */
+  /* Player wrapper — 16:9 ratio box */
   .yt-player-wrap {
     position: relative;
     width: 100%;
@@ -670,7 +670,22 @@
     height: 100%;
     border: none;
   }
-  /* Thumbnail fallback layer (shown until iframe loads or on local) */
+
+  /* Fullscreen button */
+  .yt-fs-btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.4rem;
+    padding: 0.45rem 0.75rem;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #ccc;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .yt-fs-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+  /* Thumbnail fallback layer — only shown on local file:// */
   .yt-thumb-layer {
     position: absolute;
     inset: 0;
@@ -681,6 +696,7 @@
     align-items: center;
     justify-content: center;
     background: #000;
+    z-index: 2;
   }
   .yt-thumb {
     position: absolute;
@@ -690,10 +706,10 @@
     object-fit: cover;
     transition: filter 0.3s;
   }
-  .yt-thumb-layer:hover .yt-thumb { filter: brightness(0.65); }
+  .yt-thumb-layer:hover .yt-thumb { filter: brightness(0.6); }
   .yt-play-btn {
     position: relative;
-    z-index: 2;
+    z-index: 3;
     width: 72px; height: 72px;
     background: rgba(255,0,0,0.92);
     border-radius: 50%;
@@ -703,18 +719,15 @@
     transition: transform 0.2s, background 0.2s;
     pointer-events: none;
   }
-  .yt-thumb-layer:hover .yt-play-btn {
-    transform: scale(1.12);
-    background: #ff0000;
-  }
+  .yt-thumb-layer:hover .yt-play-btn { transform: scale(1.12); background: #ff0000; }
   .yt-open-label {
     position: absolute;
     bottom: 0; left: 0; right: 0;
-    z-index: 3;
-    background: linear-gradient(transparent, rgba(0,0,0,0.85));
+    z-index: 4;
+    background: linear-gradient(transparent, rgba(0,0,0,0.88));
     color: #fff;
     font-family: 'Press Start 2P', monospace;
-    font-size: 0.38rem;
+    font-size: 0.36rem;
     text-align: center;
     padding: 1.5rem 1rem 0.6rem;
     letter-spacing: 2px;
@@ -1881,23 +1894,19 @@ document.addEventListener('click', function (e) {
   <div class="yt-modal" id="ytModal">
     <div class="yt-modal-header">
       <div class="yt-modal-title" id="ytModalTitle">FARM TUTORIAL</div>
-      <button class="yt-modal-close" onclick="closeYTBtn()">✕ CLOSE</button>
+      <div style="display:flex;gap:0.4rem;flex-shrink:0">
+        <button class="yt-fs-btn" onclick="goFullscreen()" title="Fullscreen">⛶ FULLSCREEN</button>
+        <button class="yt-modal-close" onclick="closeYTBtn()">✕ CLOSE</button>
+      </div>
     </div>
     <div class="yt-player-wrap" id="ytPlayerWrap">
-      <!-- iframe is injected here when opened -->
       <div id="ytIframeSlot"></div>
-      <!-- Thumbnail fallback — shown on local file:// and as loading bg -->
-      <div class="yt-thumb-layer" id="ytThumbLayer" onclick="openInYT()" style="display:none">
-        <img class="yt-thumb" id="ytThumb" src="" alt="Video thumbnail">
-        <div class="yt-play-btn">▶</div>
-        <div class="yt-open-label">⚠ LOCAL FILE — TAP TO OPEN IN YOUTUBE</div>
-      </div>
     </div>
   </div>
 </div>
 
 <script>
-// ── YouTube Modal Logic ────────────────────────────────────────────────────
+// ── YouTube Modal ──────────────────────────────────────────────────────────
 let _currentVideoId = '';
 
 function openYT(videoId, title) {
@@ -1908,32 +1917,43 @@ function openYT(videoId, title) {
 
   const iframeSlot = document.getElementById('ytIframeSlot');
   const thumbLayer = document.getElementById('ytThumbLayer');
-  const thumb      = document.getElementById('ytThumb');
 
-  thumb.src = 'https://img.youtube.com/vi/' + _currentVideoId + '/hqdefault.jpg';
+  thumbLayer.style.display = 'none';
+  iframeSlot.innerHTML = '';
 
-  const isLocal = window.location.protocol === 'file:';
-
-  if (isLocal) {
-    iframeSlot.innerHTML = '';
-    thumbLayer.style.display = 'flex';
-  } else {
-    thumbLayer.style.display = 'none';
-    iframeSlot.innerHTML =
-      '<iframe src="https://www.youtube-nocookie.com/embed/' + _currentVideoId +
-      '?autoplay=1&rel=0&modestbranding=1" ' +
-      'allow="accelerometer; autoplay; clipboard-write; encrypted-media; ' +
-      'gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>';
-  }
+  const iframe = document.createElement('iframe');
+  iframe.id  = 'ytIframe';
+  iframe.src = 'https://www.youtube-nocookie.com/embed/' + _currentVideoId
+             + '?autoplay=1&rel=0&modestbranding=1&fs=1&playsinline=1';
+  iframe.setAttribute('allow',
+    'accelerometer; autoplay; clipboard-write; encrypted-media; ' +
+    'gyroscope; picture-in-picture; web-share; fullscreen');
+  iframe.setAttribute('allowfullscreen', '');
+  iframe.setAttribute('frameborder', '0');
+  iframe.setAttribute('sandbox',
+    'allow-same-origin allow-scripts allow-presentation allow-popups allow-forms');
+  iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;';
+  iframeSlot.appendChild(iframe);
 
   document.getElementById('ytModalOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
 
+function goFullscreen() {
+  const iframe = document.getElementById('ytIframe');
+  const wrap   = document.getElementById('ytPlayerWrap');
+  const target = iframe || wrap;
+  if (!target) return;
+
+  if (target.requestFullscreen)              target.requestFullscreen();
+  else if (target.webkitRequestFullscreen)   target.webkitRequestFullscreen();
+  else if (target.mozRequestFullScreen)      target.mozRequestFullScreen();
+  else if (target.msRequestFullscreen)       target.msRequestFullscreen();
+}
+
 function openInYT() {
-  if (_currentVideoId) {
+  if (_currentVideoId)
     window.open('https://www.youtube.com/watch?v=' + _currentVideoId, '_blank');
-  }
 }
 
 function closeYTBtn() {
